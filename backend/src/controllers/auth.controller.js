@@ -95,29 +95,44 @@ export const loginUser = async (req, res) => {
 
 export const changePassword = async (req, res) => {
     try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId).select("+password");
-
-        if (!user) {
-            return res.status(401).json({
-                message: "Unauthorized",
-            });
-        };
-
         const { oldPassword, newPassword } = req.body;
 
         if (!oldPassword || !newPassword) {
             return res.status(400).json({
                 message: "Invalid request",
             });
-        };
+        }
+
+        if (
+            typeof oldPassword !== "string" ||
+            typeof newPassword !== "string" ||
+            !oldPassword.trim() ||
+            !newPassword.trim()
+        ) {
+            return res.status(400).json({
+                message: "Invalid request",
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                message: "Invalid request",
+            });
+        }
 
         if (oldPassword === newPassword) {
             return res.status(400).json({
                 message: "Invalid request",
             });
-        };
+        }
+
+        const user = await User.findById(req.user.id).select("+password");
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
 
         const isMatch = await bcrypt.compare(oldPassword, user.password);
 
@@ -125,26 +140,21 @@ export const changePassword = async (req, res) => {
             return res.status(401).json({
                 message: "Unauthorized",
             });
-        };
+        }
 
         user.password = newPassword;
-
         await user.save();
 
         return res.status(200).json({
             message: "Password changed successfully",
         });
-
     } catch (error) {
-
         console.error(error);
         return res.status(500).json({
             message: "Something went wrong",
         });
-
     }
 };
-
 
 export const logoutUser = async (req, res) => {
     try {
