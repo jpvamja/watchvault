@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser } from "../controllers/auth.controller.js";
+import { registerUser, loginUser, logoutUser, changePassword } from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { validateRequiredFields } from "../middlewares/validate.middleware.js";
-import { changePassword } from "../controllers/auth.controller.js";
 
 const router = Router();
 
@@ -26,8 +25,7 @@ router.get(
         res.status(200).json({
             success: true,
             message: "Auth pipeline verified successfully",
-            userId: id,
-            username,
+            userId: req.user.id,
         });
     }
 );
@@ -43,6 +41,5 @@ router.post(
     authMiddleware,
     logoutUser
 );
-
 
 export default router;
