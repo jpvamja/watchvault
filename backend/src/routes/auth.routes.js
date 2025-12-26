@@ -2,6 +2,7 @@ import { Router } from "express";
 import { registerUser, loginUser } from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { validateRequiredFields } from "../middlewares/validate.middleware.js";
+import { changePassword } from "../controllers/auth.controller.js";
 
 const router = Router();
 
@@ -30,5 +31,11 @@ router.get(
         });
     }
 );
+
+router.patch(
+    "/change-password",
+    authMiddleware,
+    changePassword
+)
 
 export default router;
