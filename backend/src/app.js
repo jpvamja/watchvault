@@ -1,11 +1,11 @@
 import express from "express";
 
+import authRoutes from "./routes/auth.routes.js";
+
 const app = express();
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
-
 
 app.get('/health', (req, res) => {
     res.status(200).json({
@@ -13,5 +13,7 @@ app.get('/health', (req, res) => {
         message: "Server is healthy"
     });
 });
+
+app.use("/api/v1/auth", authRoutes);
 
 export default app;

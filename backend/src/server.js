@@ -12,6 +12,7 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const startServer = async () => {
     try {
         await connectDB();
+        
         app.listen(PORT, () => {
             console.log(`App listening on port http://localhost:${PORT}`);
             console.log(`Environment: ${NODE_ENV}`);
