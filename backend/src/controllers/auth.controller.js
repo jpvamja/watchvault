@@ -1,5 +1,4 @@
 import { User } from "../models/user.model.js";
-import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/token.util.js";
 
 export const registerUser = async (req, res) => {
@@ -50,16 +49,7 @@ export const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email }).select("+password");
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -91,14 +81,9 @@ export const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
-    // Validation
     if (
       !oldPassword ||
       !newPassword ||
-      typeof oldPassword !== "string" ||
-      typeof newPassword !== "string" ||
-      !oldPassword.trim() ||
-      !newPassword.trim() ||
       newPassword.length < 8 ||
       oldPassword === newPassword
     ) {
@@ -110,16 +95,7 @@ export const changePassword = async (req, res) => {
 
     const user = await User.findById(req.user.id).select("+password");
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-
-    if (!isMatch) {
+    if (!user || !(await user.comparePassword(oldPassword))) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
@@ -143,16 +119,8 @@ export const changePassword = async (req, res) => {
 };
 
 export const logoutUser = async (req, res) => {
-  try {
-    return res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout failed:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
 };

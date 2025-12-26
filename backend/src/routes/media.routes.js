@@ -13,12 +13,42 @@ import {
 
 const router = express.Router();
 
-router.post("/", authMiddleware, validateAddMedia, addMedia);
+/* ======================
+   ADD MEDIA
+====================== */
+router.post(
+  "/",
+  authMiddleware,
+  validateAddMedia,
+  addMedia        // 👈 controller called here
+);
 
-router.get("/", authMiddleware, getAllMedia);
+/* ======================
+   GET ALL MEDIA (FILTERS)
+====================== */
+router.get(
+  "/",
+  authMiddleware,
+  getAllMedia     // 👈 controller called here
+);
 
-router.patch("/:id", authMiddleware, validateUpdateMedia, updateMedia);
+/* ======================
+   UPDATE MEDIA
+====================== */
+router.patch(
+  "/:id",
+  authMiddleware,
+  validateUpdateMedia,
+  updateMedia     // 👈 controller called here
+);
 
-router.delete("/:id", authMiddleware, deleteMedia);
+/* ======================
+   DELETE MEDIA
+====================== */
+router.delete(
+  "/:id",
+  authMiddleware,
+  deleteMedia     // 👈 controller called here
+);
 
 export default router;

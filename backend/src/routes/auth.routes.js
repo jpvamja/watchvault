@@ -31,10 +31,11 @@ router.get(
 );
 
 router.patch(
-    "/change-password",
-    authMiddleware,
-    changePassword
-)
+  "/change-password",
+  authMiddleware,
+  validateRequiredFields(["oldPassword", "newPassword"]),
+  changePassword
+);
 
 router.post(
     "/logout",
