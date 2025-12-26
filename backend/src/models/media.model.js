@@ -2,10 +2,6 @@ import mongoose from "mongoose";
 
 const mediaSchema = new mongoose.Schema(
   {
-    /* ================================
-       1️⃣ BASIC REQUIRED FIELDS
-    ================================= */
-
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -28,14 +24,9 @@ const mediaSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      required: true,
       enum: ["towatch", "watching", "watched"],
       default: "towatch",
     },
-
-    /* ================================
-       2️⃣ OPTIONAL BUT STRUCTURED
-    ================================= */
 
     genres: {
       type: [String],
@@ -58,17 +49,23 @@ const mediaSchema = new mongoose.Schema(
       max: 5,
     },
 
-    /* ================================
-       3️⃣ TV-SPECIFIC (CONDITIONAL)
-    ================================= */
+    platform: {
+      type: String,
+      enum: ["netflix", "prime", "hotstar", "other"],
+    },
+
+    imdbId: {
+      type: String,
+      trim: true,
+    },
 
     totalSeasons: {
       type: Number,
       min: 1,
       validate: {
-        validator: function (value) {
+        validator(value) {
           if (this.format === "tv") return value >= 1;
-          return value === undefined;
+          return value === undefined || value === null;
         },
         message: "totalSeasons allowed only for TV shows",
       },
@@ -78,9 +75,9 @@ const mediaSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       validate: {
-        validator: function (value) {
+        validator(value) {
           if (this.format === "tv") return value >= 1;
-          return value === undefined;
+          return value === undefined || value === null;
         },
         message: "totalEpisodes allowed only for TV shows",
       },
@@ -90,9 +87,9 @@ const mediaSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       validate: {
-        validator: function (value) {
+        validator(value) {
           if (this.format === "tv") return value >= 1;
-          return value === undefined;
+          return value === undefined || value === null;
         },
         message: "currentSeason allowed only for TV shows",
       },
@@ -102,17 +99,18 @@ const mediaSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       validate: {
-        validator: function (value) {
+        validator(value) {
           if (this.format === "tv") return value >= 1;
-          return value === undefined;
+          return value === undefined || value === null;
         },
         message: "currentEpisode allowed only for TV shows",
       },
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+// 🔍 Performance index
+mediaSchema.index({ user: 1, createdAt: -1 });
 
 export const Media = mongoose.model("Media", mediaSchema);

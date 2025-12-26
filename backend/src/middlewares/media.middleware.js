@@ -1,5 +1,5 @@
 export const validateAddMedia = (req, res, next) => {
-  const { title, format, status } = req.body;
+  const { title, format, status, totalSeasons, totalEpisodes } = req.body;
 
   if (
     !title ||
@@ -32,6 +32,21 @@ export const validateAddMedia = (req, res, next) => {
     });
   }
 
+  // 🔴 TV-specific required fields
+  if (format === "tv") {
+    if (
+      typeof totalSeasons !== "number" ||
+      typeof totalEpisodes !== "number" ||
+      totalSeasons < 1 ||
+      totalEpisodes < 1
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "TV shows require totalSeasons and totalEpisodes",
+      });
+    }
+  }
+
   next();
 };
 
@@ -58,11 +73,7 @@ export const validateUpdateMedia = (req, res, next) => {
     });
   }
 
-  const isValid = updates.every((field) =>
-    allowedFields.includes(field)
-  );
-
-  if (!isValid) {
+  if (!updates.every((field) => allowedFields.includes(field))) {
     return res.status(400).json({
       success: false,
       message: "Invalid request",
@@ -82,6 +93,16 @@ export const validateUpdateMedia = (req, res, next) => {
   if (
     req.body.myRating !== undefined &&
     (req.body.myRating < 1 || req.body.myRating > 5)
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request",
+    });
+  }
+
+  if (
+    req.body.platform &&
+    !["netflix", "prime", "hotstar", "other"].includes(req.body.platform)
   ) {
     return res.status(400).json({
       success: false,

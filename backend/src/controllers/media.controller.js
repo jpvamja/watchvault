@@ -26,16 +26,12 @@ export const addMedia = async (req, res) => {
 
 /* ======================
    GET ALL MEDIA
-   (FILTER + SORT)
 ====================== */
 export const getAllMedia = async (req, res) => {
   try {
-    // 🔒 ownership
     const query = { user: req.user.id };
 
     const { status, platform, format, rating, sort } = req.query;
-
-    /* ---------- FILTERS (AND LOGIC) ---------- */
 
     if (status) {
       if (!["towatch", "watching", "watched"].includes(status)) {
@@ -83,8 +79,7 @@ export const getAllMedia = async (req, res) => {
       }
     }
 
-    /* ---------- SORTING ---------- */
-    let sortOption = { createdAt: -1 }; // default recent
+    let sortOption = { createdAt: -1 };
 
     if (sort) {
       if (sort === "rating") {
@@ -133,6 +128,15 @@ export const updateMedia = async (req, res) => {
     }
 
     Object.assign(media, req.body);
+
+    // 🚫 Ensure movies never store TV progress
+    if (media.format === "movie") {
+      media.currentSeason = undefined;
+      media.currentEpisode = undefined;
+      media.totalSeasons = undefined;
+      media.totalEpisodes = undefined;
+    }
+
     await media.save();
 
     return res.status(200).json({
