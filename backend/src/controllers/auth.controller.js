@@ -145,3 +145,18 @@ export const changePassword = async (req, res) => {
     }
 };
 
+
+export const logoutUser = async (req, res) => {
+    try {
+        return res.status(200).json({
+            success: true,
+            message: "Logout Successfully",
+        });
+    } catch (error) {
+        console.error("Logout failed", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
