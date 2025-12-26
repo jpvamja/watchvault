@@ -1,4 +1,6 @@
 import { User } from "../models/user.model.js";
+import bcrypt from "bcrypt";
+import { generateAccessToken }  from "../utils/token.util.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -39,6 +41,50 @@ export const registerUser = async (req, res) => {
     } catch (error) {
         
         console.error("User Registration failed", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+export const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email }).select("+password");
+
+        if (!user){
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password",
+            });
+        };
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+          return res.status(401).json({
+            success: false,
+            message: "Invalid email or password",
+          });
+        };
+
+        const accessToken = generateAccessToken(user);
+
+        return res.status(200).json({
+            success: true,
+            message: "Login Successfully",
+            accessToken,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+            },
+        });
+    } catch (error) {
+        console.error("Login failed", error);
 
         return res.status(500).json({
             success: false,
