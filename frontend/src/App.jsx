@@ -1,5 +1,15 @@
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./auth/AuthContext";
+
 const App = () => {
-  return <h1>WatchVault Frontend Loaded</h1>;
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
+  );
 };
 
 export default App;
