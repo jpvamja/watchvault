@@ -1,7 +1,13 @@
+import MediaList from "./MediaList";
+import { useAuth } from "../auth/AuthContext";
+
 const Dashboard = () => {
+  const { logout } = useAuth();
+
   return (
     <div>
-      <h2>Dashboard Page</h2>
+      <button onClick={logout}>Logout</button>
+      <MediaList />
     </div>
   );
 };

@@ -3,9 +3,7 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => {
-    return localStorage.getItem("token");
-  });
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
 
   const isAuthenticated = Boolean(token);
 
@@ -21,18 +19,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{
-        token,
-        isAuthenticated,
-        login,
-        logout,
-      }}
+      value={{ token, isAuthenticated, login, logout }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
