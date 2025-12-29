@@ -4,60 +4,26 @@ import API from "../api/axios";
 import { useAuth } from "../auth/AuthContext";
 
 const Login = () => {
-  const navigate = useNavigate();
   const { login } = useAuth();
-
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
-    try {
-      const res = await API.post("/auth/login", { email, password });
-      const token = res.data?.accessToken;
-
-      if (!token) throw new Error("Token missing");
-
-      login(token);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
-    }
+    const res = await API.post("/auth/login", { email, password });
+    login(res.data.accessToken);
+    navigate("/dashboard");
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h2>Login</h2>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <button type="submit">Login</button>
-      </form>
-
-      <p>
-        Don’t have an account? <a href="/register">Register</a>
-      </p>
-    </div>
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+      <button>Login</button>
+      <p><a href="/register">Register</a></p>
+    </form>
   );
 };
 

@@ -6,14 +6,11 @@ const Dashboard = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
     <div>
-      <button onClick={handleLogout}>Logout</button>
+      <button onClick={() => { logout(); navigate("/login"); }}>
+        Logout
+      </button>
       <MediaList />
     </div>
   );

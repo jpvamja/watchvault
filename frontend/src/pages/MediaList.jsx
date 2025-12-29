@@ -1,117 +1,85 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import MediaCard from "../components/MediaCard";
+import MediaForm from "../components/MediaForm";
 
 const MediaList = () => {
-  const [allMedia, setAllMedia] = useState([]);
-  const [media, setMedia] = useState([]);
+  const [media, setMedia] = useState([]);      // ALWAYS array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  const [filters, setFilters] = useState({
-    status: "all",
-    format: "all",
-    platform: "all",
-    rating: "all",
-    search: "",
-  });
+  /* ======================
+     NORMALIZE RESPONSE
+  ====================== */
+  const normalizeMedia = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.media)) return response.media;
+    if (Array.isArray(response?.data?.media)) return response.data.media;
+    return [];
+  };
 
-  /* Fetch once */
+  /* ======================
+     FETCH MEDIA
+  ====================== */
+  const fetchMedia = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/media");
+      const mediaArray = normalizeMedia(res.data);
+      setMedia(mediaArray);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load media");
+      setMedia([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMedia = async () => {
-      try {
-        const res = await API.get("/media");
-
-        let mediaArray = [];
-        if (Array.isArray(res.data)) mediaArray = res.data;
-        else if (Array.isArray(res.data.data)) mediaArray = res.data.data;
-        else if (Array.isArray(res.data.media)) mediaArray = res.data.media;
-        else if (Array.isArray(res.data.data?.media))
-          mediaArray = res.data.data.media;
-
-        setAllMedia(mediaArray);
-        setMedia(mediaArray);
-      } catch {
-        setError("⚠️ Failed to load your media. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMedia();
   }, []);
 
-  /* Apply filters */
-  useEffect(() => {
-    let filtered = [...allMedia];
-
-    if (filters.search) {
-      filtered = filtered.filter((m) =>
-        m.title.toLowerCase().includes(filters.search.toLowerCase())
-      );
-    }
-
-    if (filters.status !== "all") {
-      filtered = filtered.filter((m) => m.status === filters.status);
-    }
-
-    if (filters.format !== "all") {
-      filtered = filtered.filter((m) => m.format === filters.format);
-    }
-
-    if (filters.platform !== "all") {
-      filtered = filtered.filter((m) => m.platform === filters.platform);
-    }
-
-    if (filters.rating !== "all") {
-      filtered = filtered.filter(
-        (m) => (m.myRating || 0) >= Number(filters.rating)
-      );
-    }
-
-    setMedia(filtered);
-  }, [filters, allMedia]);
-
+  /* ======================
+     DELETE HANDLER
+  ====================== */
   const handleDelete = (id) => {
-    setAllMedia((prev) => prev.filter((m) => m._id !== id));
     setMedia((prev) => prev.filter((m) => m._id !== id));
   };
 
-  /* UX states */
-  if (loading)
-    return <p style={{ fontStyle: "italic" }}>⏳ Loading your watchlist...</p>;
-
-  if (error)
-    return <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>;
+  if (loading) return <p>⏳ Loading your media...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div>
-      <h2>My WatchVault</h2>
+      <button onClick={() => setShowForm(true)}>➕ Add Media</button>
 
-      {/* Filters (unchanged) */}
-      {/* ... keep your Phase 9 filter UI here ... */}
-
-      {/* Empty State */}
-      {media.length === 0 ? (
-        <div
-          style={{
-            padding: "20px",
-            textAlign: "center",
-            color: "#777",
-            border: "1px dashed #ccc",
-            borderRadius: "8px",
+      {showForm && (
+        <MediaForm
+          initialData={editing}
+          onSave={fetchMedia}
+          onClose={() => {
+            setEditing(null);
+            setShowForm(false);
           }}
-        >
-          🎬 No media found  
-          <br />
-          Try adjusting filters or add something new!
-        </div>
+        />
+      )}
+
+      {media.length === 0 ? (
+        <p>No media found.</p>
       ) : (
         media.map((item) => (
           <MediaCard
             key={item._id}
             media={item}
             onDelete={handleDelete}
+            onEdit={(m) => {
+              setEditing(m);
+              setShowForm(true);
+            }}
           />
         ))
       )}
