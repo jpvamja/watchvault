@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import MediaCard from "../components/MediaCard";
 
 const MediaList = () => {
   const [media, setMedia] = useState([]);
@@ -12,18 +13,14 @@ const MediaList = () => {
         const res = await API.get("/media");
 
         let mediaArray = [];
-
         if (Array.isArray(res.data)) mediaArray = res.data;
         else if (Array.isArray(res.data.data)) mediaArray = res.data.data;
         else if (Array.isArray(res.data.media)) mediaArray = res.data.media;
         else if (Array.isArray(res.data.data?.media))
           mediaArray = res.data.data.media;
-        else if (Array.isArray(res.data.data?.docs))
-          mediaArray = res.data.data.docs;
 
         setMedia(mediaArray);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setError("Failed to load media");
       } finally {
         setLoading(false);
@@ -32,6 +29,10 @@ const MediaList = () => {
 
     fetchMedia();
   }, []);
+
+  const handleDelete = (id) => {
+    setMedia((prev) => prev.filter((m) => m._id !== id));
+  };
 
   if (loading) return <p>Loading media...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -43,14 +44,13 @@ const MediaList = () => {
       {media.length === 0 ? (
         <p>No media added yet.</p>
       ) : (
-        <ul>
-          {media.map((item) => (
-            <li key={item._id}>
-              <strong>{item.title}</strong> ({item.format}) –{" "}
-              <em>{item.status}</em>
-            </li>
-          ))}
-        </ul>
+        media.map((item) => (
+          <MediaCard
+            key={item._id}
+            media={item}
+            onDelete={handleDelete}
+          />
+        ))
       )}
     </div>
   );
